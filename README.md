@@ -12,3 +12,7 @@ return $sce.trustAsHtml(gs);
 ```
 setTimeout(function(){mermaid.init();},1000)
 ```
+
+## Live Demo
+The index.html is the code for the live demo which can be seen here:
+http://kmader.github.io/angular-mermaid-js/
