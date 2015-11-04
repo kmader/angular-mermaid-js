@@ -1,18 +1,24 @@
-<!DOCTYPE html ng-app="mermaidDemo">
+<!DOCTYPE html>
 <!--[if lt IE 7]>      <html lang="en" ng-app="mermaidDemo" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
 <!--[if IE 7]>         <html lang="en" ng-app="mermaidDemo" class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html lang="en" ng-app="mermaidDemo" class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!--> <html lang="en" ng-app="mermaidDemo" class="no-js"> <!--<![endif]-->
 <head>
+<!-- META charset is important, because mermaid.js use some UTF-8 encoded variables -->
+<meta charset="utf-8" />
 
 <title>Mermaid-Angular Demo</title>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+<!--MERMAID CSS styles-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mermaid/0.5.5/mermaid.css">
+
 <link href="http://fonts.googleapis.com/css?family=Cookie|Open+Sans:400,700" rel="stylesheet" />
 </head>
 
-	<body>
+	<body ng-app="mermaidDemo">
 	    <div class="jumbotron">
 	    <h2>Mermaid+Angular</h2><h3> Demo</h3>
 	    </div>
@@ -21,14 +27,16 @@
             <p> Click the node to add it to the list, a delay of 2s (2000) is used to illustrate the redraw, typically a much smaller value can be used 
             <ul class="list-group">
                 <li ng-repeat="node in nodes" class="list-group-item" ng-click="addToRun({name: 'Node_'+node})">
-                   <span class="label label-info"> Node {{node}} </span></br>
+                   <span class="label label-info"> Node {{node}} </span><br/>
                 </li>
             </ul>
-            <div class="well mermaid" ng-bind-html="getGraph()"></div>
+            <div class="mermaid" ng-bind-html="getGraph()"></div>
         </div>
-<script src="js/angular.min.js"></script> 
-<script src="js/angular-sanitize.min.js"></script> 
-<script src="js/mermaid.min.js"></script>
+
+<!--Libraries load-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular-sanitize.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/0.5.5/mermaid.js"></script>
 
 <script>
 var refreshTime = 2000;
@@ -41,19 +49,33 @@ myac.controller('NodeListController', ['$scope','$sce', function($scope, $sce) {
     $scope.nodes = [1,2,3,4,5]
     
     $scope.graphScript = ""
+
+    mermaid.initialize({
+        // Load mermaid after init() call
+        startOnLoad:false,
+        flowchart: {
+            // Suppress use "height=100% in final svg object
+            useMaxWidth: false
+        }
+    });
     
     $scope.addToRun = function(s) {
+        // Add demo object to graph
         $scope.graphScript+=" Start-->"+s.name+"; ";
+
+        // Mermaid uses attribute data-processed="true" as flag "this graph is initialized".
+        // Clear flag, otherwise mermaid will skip rendering next time.
+        angular.forEach(document.getElementsByClassName('mermaid'), function(elem) {
+            elem.removeAttribute('data-processed');
+        });
+
+        // Graph reinicialization
         setTimeout(function(){mermaid.init();},2000)
     };
     
     $scope.getGraph = function() {
-         if($scope.graphScript.length>0) {
-            var gs = "graph TD; " + $scope.graphScript
-            return $sce.trustAsHtml(gs);
-         } else {
-            return "";
-         }
+        var gs = $scope.graphScript ? "graph TD; " + $scope.graphScript: "";
+        return $sce.trustAsHtml(gs);
     }
 }]);
 
